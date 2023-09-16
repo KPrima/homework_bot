@@ -1,0 +1,4 @@
+2023-09-16 10:33:41,515 - INFO - Начало запроса. URL: https://practicum.yandex.ru/api/user_api/homework_statuses/; параметры: {'from_date': 1694838821}
+2023-09-16 10:33:41,646 - DEBUG - Starting new HTTPS connection (1): practicum.yandex.ru:443
+2023-09-16 10:33:42,189 - DEBUG - https://practicum.yandex.ru:443 "GET /api/user_api/homework_statuses/?from_date=1694838821 HTTP/1.1" 200 42
+2023-09-16 10:33:42,192 - DEBUG - Проверка ответа API начата

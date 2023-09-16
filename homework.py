@@ -31,17 +31,7 @@ HOMEWORK_VERDICTS = {
 
 def check_tokens():
     """Проверяет доступность переменных окружения."""
-    values = [
-        PRACTICUM_TOKEN,
-        TELEGRAM_TOKEN,
-        TELEGRAM_CHAT_ID
-    ]
-    for value in values:
-        if value is None:
-            logging.critical('Отсутствуют обязательные переменные окружения')
-            sys.exit('Остановка программы в связи с отсутствием обязательной '
-                     'переменной окружения'
-                     )
+    return all([TELEGRAM_TOKEN, PRACTICUM_TOKEN, TELEGRAM_CHAT_ID])
 
 
 def send_message(bot, message):
@@ -65,6 +55,7 @@ def get_api_answer(timestamp):
         'params': params,
     }
     try:
+        logging.info(f'Начало запроса. URL: {ENDPOINT}; параметры: {params}')
         response = requests.get(**params_request)
         if response.status_code != HTTPStatus.OK:
             raise InvalidResponseCode(
@@ -87,38 +78,39 @@ def get_api_answer(timestamp):
 def check_response(response):
     """Проверяет ответ API на соответствие документации."""
     logging.debug('Проверка ответа API начата')
-    try:
-        timestamp = response['current_date']
-    except KeyError:
-        logging.error('Ключ current_date отсутствует в ответе API')
-    try:
-        homeworks = response['homeworks']
-    except KeyError:
-        logging.error('Ключ homeworks отсутствует в ответе API')
-    if isinstance(timestamp, int) and isinstance(homeworks, list):
-        return homeworks
-    else:
-        raise TypeError('Неккоректный тип ответа API')
+    if not isinstance(response, dict):
+        raise TypeError('Ответ API не является словарем')
+    if 'homeworks' not in response:
+        raise KeyError('Ключ homeworks отсутствует в ответе API')
+    if 'current_date' not in response:
+        raise KeyError('Ключ current_date отсутствует в ответе API')
+    homeworks = response['homeworks']
+    if not isinstance(homeworks, list):
+        raise TypeError('homeworks не является списком')
+    return homeworks
 
 
 def parse_status(homework):
     """Извлекает из общей информации статус о конкретной домашней работе."""
     homework_name = homework.get('homework_name')
-    status = homework.get('status')
-    if homework_name is not None and status is not None:
-        if status in HOMEWORK_VERDICTS:
-            verdict = HOMEWORK_VERDICTS[status]
-            return (f'Изменился статус проверки работы "{homework_name}". '
-                    f'{verdict}')
-        else:
-            raise ValueError('Неожиданный статус работы "{homework_name}"')
-    else:
-        raise ValueError('Отсутствует информация о работе "{homework_name}"')
+    homework_status = homework.get('status')
+    if 'homework_name' not in homework:
+        raise KeyError('В ответе API отсутствует ключ homework_name')
+    if 'status' not in homework:
+        raise KeyError('В ответе API отсутствует ключ status')
+    if homework_status not in HOMEWORK_VERDICTS:
+        raise ValueError(f'Неизвестный статус работы: {homework_status}')
+    verdict = HOMEWORK_VERDICTS[homework_status]
+    return f'Изменился статус проверки работы "{homework_name}" {verdict}'
 
 
 def main():
     """Основная логика работы бота."""
-    check_tokens()
+    if not check_tokens():
+        logging.critical('Отсутствуют обязательные переменные окружения')
+        sys.exit('Остановка программы в связи с отсутствием обязательной '
+                 'переменной окружения'
+                 )
     bot = telegram.Bot(token=TELEGRAM_TOKEN)
     timestamp = int(time.time())
     while True:
@@ -140,6 +132,7 @@ if __name__ == '__main__':
     logging.basicConfig(
         format='%(asctime)s - %(levelname)s - %(message)s',
         level=logging.DEBUG,
-        handlers=[logging.StreamHandler(sys.stdout)]
+        handlers=[logging.FileHandler('log.txt'),
+                  logging.StreamHandler(sys.stdout)]
     )
     main()
