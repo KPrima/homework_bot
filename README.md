@@ -20,3 +20,60 @@ https://practicum.yandex.ru/api/user_api/homework_statuses/
 - работа принята на проверку;
 - работа возвращена для исправления ошибок;
 - работа принята.
+
+### УСТАНОВКА:
+
+Чтобы развернуть проект на локальной машине, выполните следующие шаги:
+
+- _Клонируйте репозиторий:_
+
+```
+git clone git@github.com:KPrima/homework_bot.git
+```
+
+- _Перейдите в директорию проекта:_
+
+```
+cd homework_bot
+```
+
+- _Создайте виртуальное окружение:_
+
+```
+python -m venv venv
+```
+
+- _Активируйте виртуальное окружение:_
+
+для Windows:
+```
+venv\Scripts\activate
+```
+
+для macOS и Linux:
+```
+source venv/bin/activate
+```
+
+- _Установите зависимости:_
+
+```
+pip install -r requirements.txt
+```
+
+- _В консоли импортируем токены для Яндекс.Практикум и для Телеграмм::_
+
+```
+export PRACTICUM_TOKEN=<PRACTICUM_TOKEN>
+export TELEGRAM_TOKEN=<TELEGRAM_TOKEN>
+export CHAT_ID=<CHAT_ID>
+```
+
+- _Запустите бота:_
+
+```
+python homework.py
+```
+
+### Об авторе:
+[Кристина Прима](https://github.com/themasterid)
